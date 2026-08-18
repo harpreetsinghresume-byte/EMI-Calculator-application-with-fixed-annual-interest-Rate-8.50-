@@ -16,6 +16,9 @@ A responsive, user-friendly **Car Loan EMI Calculator** built for Indian currenc
 * **JavaScript (ES6)** - Interactive calculation logic and real-time DOM updates
 * **Chart.js** - Visual data representation
 
+## 💻 Installation & Usage
 
-
+ 1. Clone the repository or download the ZIP file:
+   ```bash
+git clone https://github.com/harpreetsinghresume-byte/car-loan-emi-calculator.git
 
