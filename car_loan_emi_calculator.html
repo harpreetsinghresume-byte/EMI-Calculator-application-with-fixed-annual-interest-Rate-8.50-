@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Loan EMI Calculator - 8.50% p.a. - INR</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-full flex flex-col">
+
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg">
+                    <i class="fa-solid fa-car text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Car Loan EMI Calculator (₹ INR)</h1>
+                    <p class="text-xs text-slate-400">Fixed Annual Interest Rate: <span class="font-semibold text-indigo-400">8.50% p.a.</span></p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600 text-sm">
+                <span class="text-slate-400">Interest Rate:</span>
+                <span class="font-semibold text-indigo-400">8.50%</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Input Panel -->
+        <section class="lg:col-span-5 bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 shadow-xl flex flex-col justify-between">
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-white mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-indigo-400"></i> Loan Parameters
+                    </h2>
+                    <p class="text-xs text-slate-400">Adjust vehicle price, down payment, and tenure to inspect your car loan EMI.</p>
+                </div>
+
+                <!-- Car / Total Asset Value -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="carValueInput" class="text-sm font-medium text-slate-300">Total Car Value</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-sm">₹</span>
+                            <input type="text" id="carValueInput" value="12,00,000" class="w-36 bg-slate-900 border border-slate-600 rounded-lg py-1.5 pl-7 pr-3 text-right font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+                    <input type="range" id="carValueRange" min="200000" max="5000000" step="50000" value="1200000" class="w-full accent-indigo-500 bg-slate-700 rounded-lg appearance-none h-2 cursor-pointer">
+                </div>
+
+                <!-- Down Payment -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <label for="downPaymentInput" class="text-sm font-medium text-slate-300">Down Payment</label>
+                            <span id="downPaymentPercentBadge" class="bg-indigo-950 text-indigo-300 border border-indigo-800 text-xs px-2 py-0.5 rounded-full font-medium">20%</span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-sm">₹</span>
+                            <input type="text" id="downPaymentInput" value="2,40,000" class="w-36 bg-slate-900 border border-slate-600 rounded-lg py-1.5 pl-7 pr-3 text-right font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+                    <input type="range" id="downPaymentRange" min="0" max="5000000" step="20000" value="240000" class="w-full accent-indigo-500 bg-slate-700 rounded-lg appearance-none h-2 cursor-pointer">
+                </div>
+
+                <!-- Calculated Loan Amount (Read-only display) -->
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/80 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block uppercase tracking-wider font-semibold">Required Loan Amount</span>
+                        <span class="text-xs text-slate-500">Car Value minus Down Payment</span>
+                    </div>
+                    <span id="loanAmountDisplay" class="text-xl font-bold text-indigo-400">₹9,60,000</span>
+                </div>
+
+                <!-- Loan Tenure (Car loans usually shorter, up to 7 years) -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="tenureInput" class="text-sm font-medium text-slate-300">Loan Tenure (Years)</label>
+                        <div class="flex items-center space-x-1">
+                            <input type="number" id="tenureInput" min="1" max="7" value="5" class="w-20 bg-slate-900 border border-slate-600 rounded-lg py-1.5 px-3 text-right font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <span class="text-sm text-slate-400">Yrs</span>
+                        </div>
+                    </div>
+                    <input type="range" id="tenureRange" min="1" max="7" step="1" value="5" class="w-full accent-indigo-500 bg-slate-700 rounded-lg appearance-none h-2 cursor-pointer">
+                </div>
+
+            </div>
+
+            <!-- Quick Action button -->
+            <div class="mt-8 pt-4 border-t border-slate-700 flex gap-3">
+                <button id="resetBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 px-4 rounded-xl transition duration-200 text-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset
+                </button>
+                <button id="printBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 text-sm shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-print mr-1.5"></i> Summary
+                </button>
+            </div>
+        </section>
+
+        <section class="lg:col-span-7 flex flex-col space-y-6">
+            
+            <!-- Primary EMI Result Card -->
+            <div class="bg-gradient-to-br from-indigo-900/40 via-slate-800 to-slate-800 rounded-2xl border border-indigo-500/30 p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-indigo-400 pointer-events-none">
+                    <i class="fa-solid fa-indian-rupee-sign text-9xl"></i>
+                </div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <span class="text-slate-400 text-xs uppercase tracking-wider font-semibold">Monthly Payment (EMI)</span>
+                        <div id="mainEmiDisplay" class="text-4xl font-extrabold text-white mt-1">₹19,730</div>
+                    </div>
+                    <div class="bg-indigo-600/20 border border-indigo-500/40 px-3.5 py-1.5 rounded-xl text-indigo-300 text-xs font-medium">
+                        <i class="fa-solid fa-percent mr-1"></i> Fixed Rate: 8.50% p.a.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-700/60">
+                    <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-700/50">
+                        <span class="text-xs text-slate-400 block mb-1">Principal Amount</span>
+                        <div id="mainPrincipalDisplay" class="text-lg font-bold text-white">₹9,60,000</div>
+                    </div>
+                    <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-700/50">
+                        <span class="text-xs text-slate-400 block mb-1">Total Interest Payable</span>
+                        <div id="mainInterestDisplay" class="text-lg font-bold text-purple-400">₹2,23,800</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center text-xs text-slate-300 px-1">
+                    <span>Total Payment (Principal + Interest):</span>
+                    <span id="mainTotalPaymentDisplay" class="font-bold text-indigo-300">₹11,83,800</span>
+                </div>
+            </div>
+
+            <!-- Visualization / Chart Container -->
+            <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-5 shadow-xl flex-grow flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-semibold text-white">Payment Breakdown (Principal vs Interest)</h3>
+                    <div class="flex items-center space-x-4 text-xs">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span>
+                            <span class="text-slate-300">Principal</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
+                            <span class="text-slate-300">Interest</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative flex-grow h-60 w-full">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="modalContainer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button id="closeModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Car Loan Summary Report (₹ INR @ 8.50%)
+            </h3>
+            <div id="modalContent" class="text-sm text-slate-300 space-y-3 mb-6">
+                <!-- Dynamic summary text -->
+            </div>
+            <div class="flex justify-end gap-3">
+                <button id="modalPrintBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-xl text-sm transition">
+                    <i class="fa-solid fa-print mr-1"></i> Print / Save PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const carValueInput = document.getElementById('carValueInput');
+        const carValueRange = document.getElementById('carValueRange');
+        const downPaymentInput = document.getElementById('downPaymentInput');
+        const downPaymentRange = document.getElementById('downPaymentRange');
+        const downPaymentPercentBadge = document.getElementById('downPaymentPercentBadge');
+        const loanAmountDisplay = document.getElementById('loanAmountDisplay');
+        const tenureInput = document.getElementById('tenureInput');
+        const tenureRange = document.getElementById('tenureRange');
+        const resetBtn = document.getElementById('resetBtn');
+        const printBtn = document.getElementById('printBtn');
+        const modalContainer = document.getElementById('modalContainer');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalContent = document.getElementById('modalContent');
+        const modalPrintBtn = document.getElementById('modalPrintBtn');
+
+        // Main Result Displays
+        const mainEmiDisplay = document.getElementById('mainEmiDisplay');
+        const mainPrincipalDisplay = document.getElementById('mainPrincipalDisplay');
+        const mainInterestDisplay = document.getElementById('mainInterestDisplay');
+        const mainTotalPaymentDisplay = document.getElementById('mainTotalPaymentDisplay');
+
+        // Chart instance
+        let comparisonChart = null;
+
+        // Indian Currency Format helper (Lakhs / Crores standard)
+        function formatINR(amount) {
+            if (isNaN(amount)) return '₹0';
+            const rounded = Math.round(amount);
+            return '₹' + rounded.toLocaleString('en-IN');
+        }
+
+        // Parse formatted string back to number
+        function parseCurrency(str) {
+            return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        // Core EMI calculation function for 8.50%
+        function calculateEMI(principal, annualRate, years) {
+            if (principal <= 0 || years <= 0) return { emi: 0, totalInterest: 0, totalPayment: 0 };
+            const monthlyRate = annualRate / 12 / 100;
+            const months = years * 12;
+            const x = Math.pow(1 + monthlyRate, months);
+            const emi = (principal * monthlyRate * x) / (x - 1);
+            const totalPayment = emi * months;
+            const totalInterest = totalPayment - principal;
+            return {
+                emi: isNaN(emi) ? 0 : emi,
+                totalInterest: isNaN(totalInterest) ? 0 : totalInterest,
+                totalPayment: isNaN(totalPayment) ? 0 : totalPayment
+            };
+        }
+
+        // Update calculations and UI
+        function updateCalculations() {
+            const carVal = parseCurrency(carValueInput.value);
+            let downPymt = parseCurrency(downPaymentInput.value);
+
+            // Ensure down payment doesn't exceed car value
+            if (downPymt > carVal) {
+                downPymt = carVal;
+                downPaymentInput.value = downPymt.toLocaleString('en-IN');
+                downPaymentRange.value = downPymt;
+            }
+
+            downPaymentRange.max = carVal;
+
+            const loanAmount = Math.max(0, carVal - downPymt);
+            loanAmountDisplay.textContent = formatINR(loanAmount);
+
+            // Calculate percentage
+            const dpPercent = carVal > 0 ? ((downPymt / carVal) * 100).toFixed(1) : 0;
+            downPaymentPercentBadge.textContent = dpPercent + '%';
+
+            const years = parseInt(tenureInput.value) || 1;
+
+            // Calculation at fixed 8.50% interest
+            const result = calculateEMI(loanAmount, 8.50, years);
+
+            // Update main display cards
+            mainEmiDisplay.textContent = formatINR(result.emi);
+            mainPrincipalDisplay.textContent = formatINR(loanAmount);
+            mainInterestDisplay.textContent = formatINR(result.totalInterest);
+            mainTotalPaymentDisplay.textContent = formatINR(result.totalPayment);
+
+            // Update Chart
+            updateChart(loanAmount, result.totalInterest);
+        }
+
+        // Initialize and update Chart.js
+        function initChart(principal, interestValue) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            comparisonChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Principal Amount', 'Total Interest (8.50%)'],
+                    datasets: [{
+                        data: [principal, interestValue],
+                        backgroundColor: ['#6366f1', '#a855f7'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += formatINR(context.parsed);
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function updateChart(principal, interestValue) {
+            if (!comparisonChart) {
+                initChart(principal, interestValue);
+                return;
+            }
+            comparisonChart.data.datasets[0].data = [principal, interestValue];
+            comparisonChart.update();
+        }
+
+        // Sync inputs and ranges
+        carValueRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            carValueInput.value = val.toLocaleString('en-IN');
+            updateCalculations();
+        });
+        carValueInput.addEventListener('input', (e) => {
+            const val = parseCurrency(e.target.value);
+            carValueRange.value = val;
+            updateCalculations();
+        });
+
+        downPaymentRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            downPaymentInput.value = val.toLocaleString('en-IN');
+            updateCalculations();
+        });
+        downPaymentInput.addEventListener('input', (e) => {
+            const val = parseCurrency(e.target.value);
+            downPaymentRange.value = val;
+            updateCalculations();
+        });
+
+        tenureRange.addEventListener('input', (e) => {
+            tenureInput.value = e.target.value;
+            updateCalculations();
+        });
+        tenureInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value) || 1;
+            if (val > 7) val = 7;
+            tenureRange.value = val;
+            updateCalculations();
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            carValueInput.value = '12,00,000';
+            carValueRange.value = '1200000';
+            downPaymentInput.value = '2,40,000';
+            downPaymentRange.value = '240000';
+            tenureInput.value = '5';
+            tenureRange.value = '5';
+            updateCalculations();
+        });
+
+        // Print / Summary Modal
+        printBtn.addEventListener('click', () => {
+            const carVal = parseCurrency(carValueInput.value);
+            const downPymt = parseCurrency(downPaymentInput.value);
+            const loanAmount = carVal - downPymt;
+            const years = tenureInput.value;
+            const res = calculateEMI(loanAmount, 8.50, years);
+
+            modalContent.innerHTML = `
+                <div class="space-y-2 border-b border-slate-700 pb-3">
+                    <div class="flex justify-between"><span class="text-slate-400">Car Value:</span> <span class="font-semibold text-white">${formatINR(carVal)}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Down Payment:</span> <span class="font-semibold text-white">${formatINR(downPymt)}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Loan Amount:</span> <span class="font-semibold text-indigo-400">${formatINR(loanAmount)}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Tenure:</span> <span class="font-semibold text-white">${years} Years</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Interest Rate:</span> <span class="font-semibold text-indigo-300">8.50% p.a.</span></div>
+                </div>
+                <div class="space-y-2 pt-2">
+                    <div class="flex justify-between bg-slate-900/50 p-2.5 rounded-lg"><span>Monthly EMI:</span> <span class="font-bold text-indigo-300">${formatINR(res.emi)} /mo</span></div>
+                    <div class="flex justify-between bg-slate-900/50 p-2.5 rounded-lg"><span>Total Interest:</span> <span class="font-bold text-purple-300">${formatINR(res.totalInterest)}</span></div>
+                    <div class="flex justify-between bg-slate-900/50 p-2.5 rounded-lg"><span>Total Payment:</span> <span class="font-bold text-white">${formatINR(res.totalPayment)}</span></div>
+                </div>
+            `;
+            modalContainer.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modalContainer.classList.add('hidden');
+        });
+
+        modalPrintBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        // Initial trigger on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCalculations();
+        });
+    </script>
+</body>
+</html>
